@@ -197,7 +197,7 @@ int compare_files(ifstream& dataset, ifstream& output, float& mean_explored_node
 		// If output file has fewer lines that dataset, report error
 		if (!getline(output,temp)) {
 			if (verbose) {
-				cout << "Error: missing lines in output file (" << line_num << endl;
+				cout << "Error: missing lines in output file " << line_num << endl;
 			}
 			return 1;
 		}
