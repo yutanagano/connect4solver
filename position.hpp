@@ -15,6 +15,13 @@ class Position {
 		int board[WIDTH][HEIGHT];
 		int heights[WIDTH];
 		unsigned int moves;
+
+		/**
+		 * Change the perspective of the board so that the current player
+		 * switches.
+		 */
+		void flip_board();
+
 	public:
 		static const int WIDTH = 7;
 		static const int HEIGHT = 6;
