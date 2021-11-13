@@ -3,7 +3,7 @@
  * Purpose: Implementation for a class storing a Connect4 position.
  *
  * @author Yuta Nagano
- * @version 0.0.1
+ * @version 1.0.0
  */
 
 #include <stdexcept>
@@ -11,13 +11,17 @@
 #include <string>
 #include "position.hpp"
 
+using namespace std;
+
 // Constructors
 
-Position::Position() board{0} heights{0} moves{0} {}
+Position::Position() : board{0}, heights{0}, moves{0} {}
 
-Position::Position(std::string moves) board{0} heights{0} moves{0} {
+Position::Position(string moves) : board{0}, heights{0}, moves{0} {
+	int move;
 	for (int i = 0; i<moves.length(); i++) {
-		play(int(moves[i]));
+		move = moves[i] - '0' - 1;
+		play(move);
 	}
 }
 
@@ -25,14 +29,14 @@ Position::Position(std::string moves) board{0} heights{0} moves{0} {
 
 bool Position::can_play(int col) const {
 	// If user enters non-existent col, throw error
-	if (col >= WIDTH || col < 0) throw std::runtime_error("can_play cannot evaluate at col >= WIDTH");
+	if (col >= WIDTH || col < 0) throw runtime_error("can_play cannot evaluate at col >= WIDTH");
 	// Return true if the height of the specified column is less than HEIGHT
 	return heights[col] < HEIGHT;
 }
 
 void Position::play(int col) {
 	// Make sure that the specified column is playable
-	assert can_play(col);
+	assert(can_play(col));
 
 	// Add a current player piece (1) to the specified column at the appropriate height
 	board[col][heights[col]] = 1;
@@ -49,7 +53,7 @@ void Position::play(int col) {
 
 bool Position::is_winning_move(int col) const {
 	// Check that the col entered is legal
-	assert can_play(col);
+	assert(can_play(col));
 
 	// First, note the coordinates of the next play (we already have col, get row)
 	int row = heights[col];
@@ -111,6 +115,18 @@ bool Position::is_winning_move(int col) const {
 
 	// No horizontal, vertical, nor diagonal wins found, so return false
 	return false;
+}
+
+int Position::get_board(int col, int row) const {
+	return board[col][row];
+}
+
+int Position::get_height(int col) const {
+	return heights[col];
+}
+
+unsigned int Position::get_moves() const {
+	return moves;
 }
 
 // Private methods

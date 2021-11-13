@@ -3,24 +3,21 @@
 	Purpose: A definition for a class storing a Connect 4 position.
 
 	@author Yuta Nagano
-	@version 0.0.1
+	@version 1.0.0
 */
+
+#ifndef POSITION_HEADER
+#define POSITION_HEADER
+
+#include<string>
+
+using namespace std;
 
 /**
 A class storing a Connect 4 position.
 Functions are relative to the current player.
 */
 class Position {
-	private:
-		int board[WIDTH][HEIGHT];
-		int heights[WIDTH];
-		unsigned int moves;
-
-		/**
-		 * Change the perspective of the board so that the current player
-		 * switches.
-		 */
-		void flip_board();
 
 	public:
 		static const int WIDTH = 7;
@@ -32,10 +29,12 @@ class Position {
 		Position();
 
 		/**
-		Constructor taking in a char* of moves to construct a mid-game position.
+		Constructor taking in a string of moves to construct a mid-game position.
+		Note: the string of moves is 1-indexed, not 0-indexed. This is in contrast
+		to the rest of the methods.
 		If the input string does not produce a valid position, this will throw an error.
 		*/
-		Position(char* moves);
+		Position(string moves);
 
 		/**
 		Indicates whether a column is playable.
@@ -60,7 +59,31 @@ class Position {
 		bool is_winning_move(int col) const;
 
 		/**
+		 * @return a value from a specified index on the board array
+		 */
+		int get_board(int col, int row) const;
+
+		/**
+		 * @return a value from a specified index on the heights array
+		 */
+		int get_height(int col) const;
+
+		/**
 		@return number of moves played in the current game
 		*/
-		unsigned int num_moves() const;
+		unsigned int get_moves() const;
+
+	private:
+		int board[WIDTH][HEIGHT];
+		int heights[WIDTH];
+		unsigned int moves;
+
+		/**
+		 * Change the perspective of the board so that the current player
+		 * switches.
+		 */
+		void flip_board();
+
 };
+
+#endif
