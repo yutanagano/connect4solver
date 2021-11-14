@@ -3,7 +3,7 @@
  * Purpose: Unit test for the position class.
  *
  * @author Yuta Nagano
- * @version 1.0.0
+ * @version 1.0.1
  */
 
 #include <iostream>
@@ -110,6 +110,14 @@ int main() {
 	if (test.can_play(4)) return fail("can_play() returns true on full column.");
 
 	// Test the alternative constructor
+	// First, test that an invalid string passed to the alternative constructor
+	// throws a runtime error
+	try {
+		test = Position("this is an invalid string.");
+		return fail("The Position constructor did not throw an error after being passed an invalid position string.");
+	}
+	catch (...) {}
+
 	test = Position("4453");
 	/*
 	 * | | | | | | | |

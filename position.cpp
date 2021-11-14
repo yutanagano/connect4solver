@@ -3,12 +3,14 @@
  * Purpose: Implementation for a class storing a Connect4 position.
  *
  * @author Yuta Nagano
- * @version 1.0.0
+ * @version 1.0.1
  */
 
 #include <stdexcept>
 #include <cassert>
 #include <string>
+#include <algorithm>
+#include <cctype>
 #include "position.hpp"
 
 using namespace std;
@@ -18,6 +20,9 @@ using namespace std;
 Position::Position() : board{0}, heights{0}, moves{0} {}
 
 Position::Position(string moves) : board{0}, heights{0}, moves{0} {
+	// Assert that the string moves only contains digits
+	if (!all_of(moves.begin(), moves.end(), ::isdigit))
+		throw runtime_error("a string containing non-digit characters cannot be passed to Position constructor.");
 	int move;
 	for (int i = 0; i<moves.length(); i++) {
 		move = moves[i] - '0' - 1;
@@ -29,7 +34,9 @@ Position::Position(string moves) : board{0}, heights{0}, moves{0} {
 
 bool Position::can_play(int col) const {
 	// If user enters non-existent col, throw error
-	if (col >= WIDTH || col < 0) throw runtime_error("can_play cannot evaluate at col >= WIDTH");
+	if (col >= WIDTH) throw runtime_error("can_play cannot evaluate at col >= WIDTH.");
+	if (col < 0) throw runtime_error("can_play cannot evaluate at col < 0.");
+
 	// Return true if the height of the specified column is less than HEIGHT
 	return heights[col] < HEIGHT;
 }
