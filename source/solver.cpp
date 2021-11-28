@@ -25,7 +25,7 @@
 #include <chrono>
 #include <algorithm>
 #include <cctype>
-#include "position.hpp"
+#include "position/position.hpp"
 
 using namespace std;
 using namespace std::chrono;
