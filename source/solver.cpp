@@ -16,7 +16,7 @@
  * | | |2|1|1| | |
  *
  * @author: Yuta Nagano
- * @version: 1.0.0
+ * @version: 1.1.0
  */
 
 #include <iostream>
@@ -38,19 +38,30 @@ int only_digits(const string& line);
 
 /**
  * Recursively solve a connect4 position using the negamax variant of the
- * minimax algorithm. A reference to an int counter should be passed in, which
- * will be incremented every time a new position is evaluated in the recursive
- * algorithm.
- * @return the score of a position:
- *  - 0 for a draw
- *  - positive score for a forcing win, where the numerical value corresponds to the
- *    number of turns before the maximum possible turns that you win (that is,
- *    the earlier you win, the higher your score)
- *  - negative score for a forcing loss, where the numerical value corresponds
- *    to the number of turns before the maximum possible turns that you lose 
- *    (that is, the earlier you lose, the lower your score)
+ * minimax algorithm with alpha-beta pruning. A reference to an int counter
+ * should be passed in, which will be incremented every time a new position is 
+ * evaluated in the recursive algorithm.
+ * @param alpha, the lower bound for the window in which we search for the
+ *        score, which also represents the best score reached upstream so far
+ *        by the maximiser.
+ * @param beta, the upper bound for the window in which we search for the score,
+ *        which also represents the best score reached upstream so far by the
+ *        minimiser.
+ * @return the exact score, or an upper or lower bound of the socre of a
+ *         position depending on the case:
+ *  - if alpha <= actual score <= beta, then return true score
+ *  - if actual score <= alpha, then return upper bound of actual score
+ *  - if actual score >= beta, then return lower bound of actual score
+ *  - the scores will take the following values:
+ *		- 0 for a draw
+ *		- positive score for a forcing win, where the numerical value
+ *		  corresponds to the number of turns before the maximum possible turns
+ *		  that you win (that is, the earlier you win, the higher your score)
+ *		- negative score for a forcing loss, where the numerical value
+ *		  corresponds to the number of turns before the maximum possible turns
+ *		  that you lose (that is, the earlier you lose, the lower your score)
  */
-int negamax(const Position& P, int& position_counter);
+int negamax(const Position& P, int alpha, int beta, int& position_counter);
 
 /**
  * read every line from the standard input, which should contain an encoding
@@ -64,7 +75,7 @@ int main() {
 	// of positions explored
 	string line;
 	Position position;
-	int score, counter;
+	int score, counter, baseScore = Position::WIDTH * Position::HEIGHT / 2;
 
 	while (getline(cin, line)) {
 		if (!only_digits(line))
@@ -75,7 +86,7 @@ int main() {
 		// take a note of the time to measure execution time in microseconds
 		high_resolution_clock::time_point start = high_resolution_clock::now();
 
-		score = negamax(position, counter);
+		score = negamax(position, -baseScore, baseScore, counter);
 
 		// now take note of the time again
 		high_resolution_clock::time_point stop = high_resolution_clock::now();
@@ -93,7 +104,7 @@ int only_digits(const string& line) {
 	return all_of(line.begin(), line.end(), ::isdigit);
 }
 
-int negamax(const Position& P, int& position_counter) {
+int negamax(const Position& P, int alpha, int beta, int& position_counter) {
 	// Increment the position counter as we are evaluating a new position
 	position_counter++;
 
@@ -109,11 +120,15 @@ int negamax(const Position& P, int& position_counter) {
 	// Otherwise, recursively evaluate future positions via negamax and use
 	// those evaluations to compute the value of the current position
 	
-	// In order to keep track of which of the positions in the immediate future
-	// is the most favourable to the current player, create a variable to store
-	// the best score produced by the immediate future positions. Initialise
-	// this variable using the lower bound of the possible score.
-	int bestScore = -(Position::WIDTH * Position::HEIGHT) / 2;
+	// Upper bound the max possible score, given that we cannot win immediately
+	int maxScore = (Position::WIDTH * Position::HEIGHT - P.get_moves() - 1) / 2;
+	
+	// Beta does not need to be larger than maxScore
+	if (beta > maxScore) {
+		beta = maxScore;
+		// Prune exploration if the [alpha:beta] window is now empty
+		if (alpha >= beta) return beta;
+	}
 
 	// Evaluate the scores of all possible next positions and keep the best one
 	for (int i = 0; i < Position::WIDTH; i++)
@@ -124,13 +139,17 @@ int negamax(const Position& P, int& position_counter) {
 			P2.play(i);
 			// Evaluate the position (negative score because the "current player"
 			// in this position would be the opponent of the current player of
-			// the current position being evaluated.
-			int score = -negamax(P2, position_counter);
-			// Store this score in the bestScore variable if this is the best
-			// of the scores seen so far.
-			if (score > bestScore) bestScore = score;
+			// the current position being evaluated. Notice also that the alpha
+			// and beta are inverted and fed in in the opposite order.)
+			int score = -negamax(P2, -beta, -alpha, position_counter);
+			// Prune the exploration if we find a move better than what our
+			// opponent will allow (beta)
+			if (score >= beta) return score;
+			// Reduce the [alpha:beta] window for subsequent exploration if we
+			// find current_alpha < score < beta.
+			if (score > alpha) alpha = score;
 		}
 
-	// Return the best score reached through this manner
-	return bestScore;
+	// Return the minimum guaranteed score
+	return alpha;
 }
