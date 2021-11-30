@@ -16,7 +16,7 @@
  * | | |2|1|1| | |
  *
  * @author: Yuta Nagano
- * @version: 1.1.0
+ * @version: 1.2.0
  */
 
 #include <iostream>
@@ -29,6 +29,13 @@
 
 using namespace std;
 using namespace std::chrono;
+
+/**
+ * This variable will contain column values in the order that they should be
+ * explored (from the centre columns). The values will be initialised properly
+ * within the main function.
+ */
+int columnOrder[Position::WIDTH];
 
 /**
  * Checks if a given line (string) contains only digit chars.
@@ -70,6 +77,10 @@ int negamax(const Position& P, int alpha, int beta, int& position_counter);
  * and computation time in microseconds.
  */
 int main() {
+	// Initialise the values within the columnOrder array.
+	for (int i = 0; i < Position::WIDTH; i++)
+		columnOrder[i] = Position::WIDTH/2 + (i+1)/2 * (1-2*(i%2));
+
 	// Declare a string to store the read lines in, a position object to store
 	// positions in, and ints for the score and a counter to track the number
 	// of positions explored
@@ -131,12 +142,13 @@ int negamax(const Position& P, int alpha, int beta, int& position_counter) {
 	}
 
 	// Evaluate the scores of all possible next positions and keep the best one
-	for (int i = 0; i < Position::WIDTH; i++)
-		if (P.can_play(i)) {
+	for (int i = 0; i < Position::WIDTH; i++) {
+		int move = columnOrder[i];
+		if (P.can_play(move)) {
 			// Create a copy of the curent position
 			Position P2(P);
 			// Use this copy to play the potential move
-			P2.play(i);
+			P2.play(move);
 			// Evaluate the position (negative score because the "current player"
 			// in this position would be the opponent of the current player of
 			// the current position being evaluated. Notice also that the alpha
@@ -149,6 +161,7 @@ int negamax(const Position& P, int alpha, int beta, int& position_counter) {
 			// find current_alpha < score < beta.
 			if (score > alpha) alpha = score;
 		}
+	}
 
 	// Return the minimum guaranteed score
 	return alpha;
